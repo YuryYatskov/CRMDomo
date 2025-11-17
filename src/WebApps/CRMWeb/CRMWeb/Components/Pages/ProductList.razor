@@ -1,0 +1,135 @@
+﻿@page "/products"
+@using CRMWeb.Extensions
+@using CRMWeb.Models.Catalog
+@using CRMWeb.Services
+@using CRMWeb.Services.Catalog
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Inputs
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+<PageTitle>Products</PageTitle>
+
+<h3>Products</h3>
+
+<span class="error">@ErrorDetails</span>
+
+<SfGrid TValue="ProductModel" @ref="Grid" 
+        AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowGrouping="true"
+        Toolbar="@(new string[] { "Add", "Edit", "Delete", "Update", "Cancel" })">
+    <GridEvents TValue="ProductModel" OnActionFailure="@ActionFailure"></GridEvents> @* OnActionBegin="@HandleActionBegin" *@
+    <GridPageSettings PageSize="10"></GridPageSettings>
+    <SfDataManager AdaptorInstance="@typeof(ProductAdaptor)" Adaptor="Adaptors.CustomAdaptor"></SfDataManager>
+    <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog" Dialog="DialogParams">
+        <HeaderTemplate>
+            @{
+                var DialogHeader = GetHeader((context as ProductModel));
+                <span>@DialogHeader</span>
+            }
+        </HeaderTemplate>
+
+        <Template>
+        @{
+            var Product = (context as ProductModel);
+            var IdValue = (Product!.Id).ToString() ?? string.Empty;
+
+            <FluentValidator TValidator="ProductValidator" />
+            <ValidationSummary />
+
+            <span class="error">@ErrorDetails</span>
+
+            <div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <SfTextBox ID="Name"
+                            @bind-Value=@(Product.Name)
+                            FloatLabelType="FloatLabelType.Always"
+                            Placeholder="Name"></SfTextBox>
+                    </div>
+                    <div class="form-group col-md-8">
+                        <SfTextBox ID="Description"
+                            @bind-Value="@(Product.Description)"
+                            FloatLabelType="FloatLabelType.Always"
+                            Placeholder="Description"></SfTextBox>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <SfNumericTextBox ID="Price"
+                            @bind-Value=@(Product.Price)
+                            FloatLabelType="FloatLabelType.Auto"
+                            TValue="decimal"
+                            Placeholder="Price"></SfNumericTextBox>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="form-row">
+                    <div class="form-group col-md-7">
+                        <SfTextBox ID="Id"
+                            @bind-Value=@(IdValue)
+                            FloatLabelType="FloatLabelType.Always"
+                            Placeholder="Id"
+                            Enabled=false>
+                        </SfTextBox>
+                    </div>
+                </div>
+            </div>
+        }
+        </Template>
+    </GridEditSettings>
+  
+    <GridColumns>
+        <GridColumn Field=@nameof(ProductModel.Name) HeaderText="Name" Width="200"></GridColumn>
+        <GridColumn Field=@nameof(ProductModel.Description) HeaderText="Description" Width="400"></GridColumn>
+        <GridColumn Field=@nameof(ProductModel.Price) Format="C2" Width="140" TextAlign="@TextAlign.Right" ValidationRules="@(new ValidationRules { Required = true, Range = new object[] { 0, 10000000 } })" HeaderTextAlign="@TextAlign.Right"></GridColumn>
+        <GridColumn Field=@nameof(ProductModel.Id) HeaderText="Id" IsPrimaryKey="true" ValidationRules="@(new ValidationRules { Required = true })" TextAlign="@TextAlign.Left" HeaderTextAlign="@TextAlign.Left" Width="200"></GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@code {
+    public string ErrorDetails = string.Empty;
+    public SfGrid<ProductModel> Grid { get; set; } = new();
+    private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "450px" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    public void ActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
+    {
+        // this.ErrorDetails = "Server exception: 404 Not found";
+        StateHasChanged();
+    }
+
+    public void HandleActionBegin(ActionEventArgs<ProductModel> args)
+    {
+        if (args.RequestType == Syncfusion.Blazor.Grids.Action.BeginEdit || args.RequestType == Syncfusion.Blazor.Grids.Action.Add)
+        {
+            // We don't do anything - the dialog will open automatically
+        }
+
+        if (args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
+        {
+            if (!IsValid(args.Data))
+            {
+                args.Cancel = true; // ❗ We keep the dialogue open.
+            }
+        }
+    }
+
+    private bool IsValid(ProductModel data)
+    {
+        return !string.IsNullOrWhiteSpace(data.Name) && !string.IsNullOrWhiteSpace(data.ImageFile);
+    }
+
+    public string GetHeader(ProductModel? value)
+    {
+        return value?.Id == Guid.Empty
+            ? "New Product"
+            : "Edit Record of " + value?.Name;
+    }
+}
