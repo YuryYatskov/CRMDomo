@@ -1,4 +1,5 @@
 ﻿@page "/products"
+@using CRMWeb.Exceptions
 @using CRMWeb.Extensions
 @using CRMWeb.Models.Catalog
 @using CRMWeb.Services
@@ -18,7 +19,7 @@
 <SfGrid TValue="ProductModel" @ref="Grid" 
         AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowGrouping="true"
         Toolbar="@(new string[] { "Add", "Edit", "Delete", "Update", "Cancel" })">
-    <GridEvents TValue="ProductModel" OnActionFailure="@ActionFailure"></GridEvents> @* OnActionBegin="@HandleActionBegin" *@
+    <GridEvents TValue="ProductModel" OnActionFailure="@HandleActionFailure" OnActionBegin="@HandleActionBegin"></GridEvents>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <SfDataManager AdaptorInstance="@typeof(ProductAdaptor)" Adaptor="Adaptors.CustomAdaptor"></SfDataManager>
     <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog" Dialog="DialogParams">
@@ -37,7 +38,7 @@
             <FluentValidator TValidator="ProductValidator" />
             <ValidationSummary />
 
-            <span class="error">@ErrorDetails</span>
+            <span class="error">@ErrorDialodDetails</span>
 
             <div>
                 <div class="form-row">
@@ -98,6 +99,7 @@
 
 @code {
     public string ErrorDetails = string.Empty;
+    public string ErrorDialodDetails = string.Empty;
     public SfGrid<ProductModel> Grid { get; set; } = new();
     private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "450px" };
 
@@ -106,7 +108,7 @@
         await base.OnInitializedAsync();
     }
 
-    public void ActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
+    public void HandleActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
     {
         var errordetails = args.Error.Message;
 
@@ -118,7 +120,11 @@
                 .Select(e => e.GetProperty("errorMessage").GetString())
                 .Where(s => !string.IsNullOrWhiteSpace(s));
 
-            ErrorDetails = string.Join(" | ", msgs);
+            var dialogException = args.Error as DialogException;
+            if (dialogException is not null && dialogException.IsDialog)
+                ErrorDialodDetails = string.Join(" | ", msgs);
+            else
+                ErrorDetails = string.Join(" | ", msgs);
         }
         catch
         {
@@ -139,6 +145,7 @@
         {
             if (!IsValid(args.Data))
             {
+                ErrorDialodDetails = string.Empty;
                 args.Cancel = true; // ❗ We keep the dialogue open.
             }
         }

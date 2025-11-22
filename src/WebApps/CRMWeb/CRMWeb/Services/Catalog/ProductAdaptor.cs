@@ -1,4 +1,5 @@
-﻿using CRMWeb.Extensions;
+﻿using CRMWeb.Exceptions;
+using CRMWeb.Extensions;
 using CRMWeb.Models.Catalog;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Data;
@@ -118,7 +119,7 @@ public class ProductAdaptor : DataAdaptor
         else
         {
             Console.WriteLine($"API Error (insert): {response.StatusCode} - {response.Error?.Message} - {response.Error?.Content}");
-            throw new Exception(response.Error?.Content, response.Error);
+            throw new DialogException(response.Error?.Content, response.Error, true);
         }
     }
 
