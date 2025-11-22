@@ -5,6 +5,7 @@
 @using CRMWeb.Services.Catalog
 @using Syncfusion.Blazor.Data
 @using Syncfusion.Blazor.Inputs
+@using System.Text.Json
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
@@ -89,6 +90,12 @@
     </GridColumns>
 </SfGrid>
 
+<style>
+    .error {
+        color: red;
+    }
+</style>
+
 @code {
     public string ErrorDetails = string.Empty;
     public SfGrid<ProductModel> Grid { get; set; } = new();
@@ -101,7 +108,23 @@
 
     public void ActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
     {
-        // this.ErrorDetails = "Server exception: 404 Not found";
+        var errordetails = args.Error.Message;
+
+        try
+        {
+            var msgs = JsonDocument.Parse(errordetails).RootElement
+                .GetProperty("ValidationErrors")
+                .EnumerateArray()
+                .Select(e => e.GetProperty("errorMessage").GetString())
+                .Where(s => !string.IsNullOrWhiteSpace(s));
+
+            ErrorDetails = string.Join(" | ", msgs);
+        }
+        catch
+        {
+            ErrorDetails = errordetails;
+        }
+
         StateHasChanged();
     }
 

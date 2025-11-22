@@ -118,47 +118,8 @@ public class ProductAdaptor : DataAdaptor
         else
         {
             Console.WriteLine($"API Error (insert): {response.StatusCode} - {response.Error?.Message} - {response.Error?.Content}");
-            throw new Exception(response.Error?.Message, response.Error);
+            throw new Exception(response.Error?.Content, response.Error);
         }
-
-        //        try
-        //        {
-        //            var response = await _catalogService.CreateProduct(product!);
-        //            createProductResponse = response.Content!;
-        //            return createProductResponse;
-        //        }
-        //        catch (ApiException apiException) when (apiException.StatusCode == HttpStatusCode.NotFound)
-        //        {
-        //            //createProductResponse = new CreateProductResponse(new ProductModel());
-        //            //return createProductResponse;
-        //            throw;
-        //        }
-        //        catch (ApiException apiException) when (apiException.StatusCode == HttpStatusCode.BadRequest)
-        //        {
-        //            var content = await apiException.GetContentAsAsync<ProblemDetails>();
-
-
-        //            foreach (var problem in content!.Extensions)
-        //            {
-        //                if (problem.Key == "ValidationErrors")
-        //                {
-        //#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-        //                    var validationErrors = JsonSerializer.Deserialize<List<ValidationFailure>>(problem.Value.ToString()!,
-        //                        options: new JsonSerializerOptions
-        //                        {
-        //                            PropertyNameCaseInsensitive = true
-        //                        });
-        //#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-
-        //                    //dataManager.Parent.
-        //                    //validationErrors
-        //                }
-        //            }
-
-        //            //createProductResponse = new CreateProductResponse(new ProductModel());
-        //            //return createProductResponse;
-        //            throw;
-        //        }
     }
 
     public override async Task<object> UpdateAsync(DataManager dataManager, object data, string keyField, string key)
