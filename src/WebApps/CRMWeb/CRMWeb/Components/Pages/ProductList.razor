@@ -7,6 +7,7 @@
 @using Syncfusion.Blazor.Data
 @using Syncfusion.Blazor.Inputs
 @using System.Text.Json
+@inject ICatalogService _catalogService
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
@@ -134,19 +135,33 @@
         StateHasChanged();
     }
 
-    public void HandleActionBegin(ActionEventArgs<ProductModel> args)
+    public async Task HandleActionBegin(ActionEventArgs<ProductModel> args)
     {
-        if (args.RequestType == Syncfusion.Blazor.Grids.Action.BeginEdit || args.RequestType == Syncfusion.Blazor.Grids.Action.Add)
-        {
-            // We don't do anything - the dialog will open automatically
-        }
+        ErrorDialodDetails = string.Empty;
+        args.Cancel = false;
 
         if (args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
         {
-            if (!IsValid(args.Data))
+            var response = await _catalogService.CreateProduct(args.Data);
+
+            if (!response.IsSuccessStatusCode)
             {
-                ErrorDialodDetails = string.Empty;
-                args.Cancel = true; // ❗ We keep the dialogue open.
+                Console.WriteLine($"API Error (insert): {response.StatusCode} - {response.Error?.Message} - {response.Error?.Content}");
+
+                var errordetails = response.Error?.Content;
+
+                if (errordetails is not null)
+                {
+                    var msgs = JsonDocument.Parse(errordetails).RootElement
+                            .GetProperty("ValidationErrors")
+                            .EnumerateArray()
+                            .Select(e => e.GetProperty("errorMessage").GetString())
+                            .Where(s => !string.IsNullOrWhiteSpace(s));
+
+                    ErrorDialodDetails = string.Join(" | ", msgs);
+
+                    args.Cancel = true;
+                }
             }
         }
     }
