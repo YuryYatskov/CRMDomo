@@ -1,5 +1,4 @@
 ﻿@page "/products"
-@using CRMWeb.Exceptions
 @using CRMWeb.Extensions
 @using CRMWeb.Models.Catalog
 @using CRMWeb.Services
@@ -111,18 +110,27 @@
 
     public void HandleActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
     {
+        bool dialog = false;
         var errordetails = args.Error.Message;
 
         try
         {
+            var apiException = args.Error.InnerException as Refit.ApiException;
+            if (apiException is not null
+                && (apiException.HttpMethod.Method == "POST"
+                    || apiException.HttpMethod.Method == "PUT"
+                ))
+            {
+                dialog = true;
+            }
+
             var msgs = JsonDocument.Parse(errordetails).RootElement
                 .GetProperty("ValidationErrors")
                 .EnumerateArray()
                 .Select(e => e.GetProperty("errorMessage").GetString())
                 .Where(s => !string.IsNullOrWhiteSpace(s));
 
-            var dialogException = args.Error as DialogException;
-            if (dialogException is not null && dialogException.IsDialog)
+            if (dialog)
                 ErrorDialodDetails = string.Join(" | ", msgs);
             else
                 ErrorDetails = string.Join(" | ", msgs);
@@ -135,35 +143,10 @@
         StateHasChanged();
     }
 
-    public async Task HandleActionBegin(ActionEventArgs<ProductModel> args)
+    public void HandleActionBegin(ActionEventArgs<ProductModel> args)
     {
+        ErrorDetails = string.Empty;
         ErrorDialodDetails = string.Empty;
-        args.Cancel = false;
-
-        if (args.RequestType == Syncfusion.Blazor.Grids.Action.Save)
-        {
-            var response = await _catalogService.CreateProduct(args.Data);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"API Error (insert): {response.StatusCode} - {response.Error?.Message} - {response.Error?.Content}");
-
-                var errordetails = response.Error?.Content;
-
-                if (errordetails is not null)
-                {
-                    var msgs = JsonDocument.Parse(errordetails).RootElement
-                            .GetProperty("ValidationErrors")
-                            .EnumerateArray()
-                            .Select(e => e.GetProperty("errorMessage").GetString())
-                            .Where(s => !string.IsNullOrWhiteSpace(s));
-
-                    ErrorDialodDetails = string.Join(" | ", msgs);
-
-                    args.Cancel = true;
-                }
-            }
-        }
     }
 
     private bool IsValid(ProductModel data)
