@@ -48,7 +48,7 @@
                             FloatLabelType="FloatLabelType.Always"
                             Placeholder="Name"></SfTextBox>
                     </div>
-                    <div class="form-group col-md-8">
+                    <div class="form-group col-md-6">
                         <SfTextBox ID="Description"
                             @bind-Value="@(Product.Description)"
                             FloatLabelType="FloatLabelType.Always"
@@ -58,7 +58,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-6">
                     </div>
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-6">
                         <SfNumericTextBox ID="Price"
                             @bind-Value=@(Product.Price)
                             FloatLabelType="FloatLabelType.Auto"
@@ -69,7 +69,7 @@
             </div>
             <div>
                 <div class="form-row">
-                    <div class="form-group col-md-7">
+                    <div class="form-group col-md-6">
                         <SfTextBox ID="Id"
                             @bind-Value=@(IdValue)
                             FloatLabelType="FloatLabelType.Always"
@@ -95,13 +95,17 @@
     .error {
         color: red;
     }
+
+    .form-group .col-md-6 {
+        width: 200px;
+    }
 </style>
 
 @code {
     public string ErrorDetails = string.Empty;
     public string ErrorDialodDetails = string.Empty;
     public SfGrid<ProductModel> Grid { get; set; } = new();
-    private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "450px" };
+    private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "720px" };
 
     protected override async Task OnInitializedAsync()
     {
