@@ -19,16 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.DTO\BuildingBlocks.DTO.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Types\BuildingBlocks.Types.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks\BuildingBlocks.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Endpoints\Counterparties\CreateCounterparty\" />
-    <Folder Include="Endpoints\Counterparties\DeleteCounterparty\" />
-    <Folder Include="Endpoints\Counterparties\GetCounterparties\" />
-    <Folder Include="Endpoints\Counterparties\GetCounterpartyById\" />
-    <Folder Include="Endpoints\Counterparties\UpdateCounterparty\" />
-    <Folder Include="Endpoints\Phones\" />
   </ItemGroup>
 
 </Project>
