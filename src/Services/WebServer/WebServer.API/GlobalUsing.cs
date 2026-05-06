@@ -1,0 +1,15 @@
+﻿global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.CQRS;
+global using BuildingBlocks.Exceptions.Handler;
+global using BuildingBlocks.Exceptions;
+global using BuildingBlocks.Pagination;
+global using Carter;
+global using WebServer.API.Data.Extensions;
+global using WebServer.API.Data;
+global using WebServer.API.Exceptions;
+global using WebServer.API.Models;
+global using FluentValidation;
+global using Mapster;
+global using MediatR;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.OpenApi.Models;

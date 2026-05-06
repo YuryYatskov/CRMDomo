@@ -17,7 +17,7 @@ internal static class HostingExtensions
         builder.Services.AddRefitClient<ICatalogService>()
             .ConfigureHttpClient(c =>
             {
-                c.BaseAddress = new Uri(builder.Configuration["ApiSettings:CatalogAPIAddress"]!);
+                c.BaseAddress = new Uri(builder.Configuration["ApiSettings:WebServerAPIAddress"]!);
             });
 
         builder.Services.AddRazorComponents()
