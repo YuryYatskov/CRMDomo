@@ -18,7 +18,7 @@ public class GetCounterparties : ICarterModule
 
             return Results.Ok(response);
         })
-        .RequireAuthorization()
+        
         .WithName("GetCounterparties")
         .Produces<GetCounterpartiesResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

@@ -14,7 +14,7 @@ public class DeletePhone : ICarterModule
 
             return Results.Ok(response);
         })
-        .RequireAuthorization()
+        
         .WithName("DeletePhone")
         .Produces<DeletePhoneResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

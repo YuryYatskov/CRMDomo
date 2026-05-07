@@ -14,7 +14,7 @@ public class GetPhonesByCounterparty : ICarterModule
 
             return Results.Ok(response);
         })
-        .RequireAuthorization()
+        
         .WithName("GetPhoneByCounterparty")
         .Produces<GetPhonesByCounterpartyResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

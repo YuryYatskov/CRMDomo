@@ -18,7 +18,7 @@ public class UpdatePhone : ICarterModule
 
             return Results.Ok(response);
         })
-        .RequireAuthorization()
+        
         .WithName("UpdatePhone")
         .Produces<UpdatePhoneResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

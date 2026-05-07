@@ -18,7 +18,7 @@ public class CreatePhone : ICarterModule
 
             return Results.Created($"/phones/{response.Id}", response);
         })
-       .RequireAuthorization()
+       
        .WithName("CreatePhone")
        .Produces<CreatePhoneResponse>(StatusCodes.Status201Created)
        .ProducesProblem(StatusCodes.Status400BadRequest)

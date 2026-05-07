@@ -13,15 +13,35 @@ public static class DatabaseExtentions
 
     private static async Task SeedAsync(ApplicationDbContext context)
     {
-        await SeedProductAsync(context);
-    }
+        bool isSave = false;
 
-    private static async Task SeedProductAsync(ApplicationDbContext context)
-    {
+        IEnumerable<Counterparty>? counterparties = null;
+        IEnumerable<Phone>? phones = null;
+
         if (!await context.Products.AnyAsync())
         {
             await context.Products.AddRangeAsync(InitialData.Products);
-            await context.SaveChangesAsync();
+            isSave = true;
         }
+
+        if (!await context.Counterparties.AnyAsync())
+        {
+            counterparties = InitialData.Counterparties;
+            await context.Counterparties.AddRangeAsync(counterparties);
+            isSave = true;
+        }
+
+        if (!await context.Phones.AnyAsync())
+        {
+            counterparties = counterparties?.Count() > 1 ? counterparties : InitialData.Counterparties;
+            //context.Counterparties.AttachRange(counterparties);
+            phones = InitialData.GetPreconfiguredPhones(counterparties);
+            await context.Phones.AddRangeAsync(phones);
+            isSave = true;
+        }
+
+        if (isSave)
+            await context.SaveChangesAsync();
+
     }
 }

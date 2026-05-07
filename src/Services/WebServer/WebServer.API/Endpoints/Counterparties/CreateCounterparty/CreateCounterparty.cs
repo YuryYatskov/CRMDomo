@@ -18,7 +18,7 @@ public class CreateCounterparty : ICarterModule
 
             return Results.Created($"/counterparties/{response.Id}", response);
         })
-       .RequireAuthorization()
+       
        .WithName("CreateCounterparty")
        .Produces<CreateCounterpartyResponse>(StatusCodes.Status201Created)
        .ProducesProblem(StatusCodes.Status400BadRequest)

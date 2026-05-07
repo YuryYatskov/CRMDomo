@@ -1,6 +1,6 @@
 ﻿namespace WebServer.API.Data.Extensions;
 
-internal class InitialData
+public static partial class InitialData
 {
     public static IEnumerable<Product> Products =>
     [

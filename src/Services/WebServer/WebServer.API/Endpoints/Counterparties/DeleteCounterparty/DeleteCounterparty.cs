@@ -14,7 +14,7 @@ public class DeleteCounterparty : ICarterModule
 
             return Results.Ok(response);
         })
-        .RequireAuthorization()
+        
         .WithName("DeleteCounterparty")
         .Produces<DeleteCounterpartyResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
