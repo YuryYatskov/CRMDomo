@@ -1,0 +1,182 @@
+﻿@using BuildingBlocks.DTO.Dtos
+@using CRMWeb.Models.Counterparties
+@using CRMWeb.Services.Counterparties
+@using CRMWeb.Services.Phones
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Popups
+@inject ICounterpartyService CounterpartyService
+
+<SfDialog Width="800px" IsModal="true" Visible="true" ShowCloseIcon="true">
+    <DialogTemplates>
+        <Header>Редагування контрагента</Header>
+        <Content>
+            <SfTab>
+                <TabItems>
+
+                    <!-- Вкладка Основне -->
+                    <TabItem>
+                        <ChildContent>
+                            <div class="p-3">
+
+                                <div class="mb-2">
+                                    <label>Найменування</label>
+                                    <input class="form-control"
+                                           @bind="Model.Name" />
+                                </div>
+
+                                <div class="mb-2">
+                                    <label>Повне найменування</label>
+                                    <input class="form-control"
+                                           @bind="Model.FullName" />
+                                </div>
+                                @* 
+                                <div class="mb-2">
+                                    <label>Форма власності</label>
+                                     <select class="form-control"
+                                            @bind="Model.FormOfOwnership">
+                                        @foreach (var f in Enum.GetValues<FormOfOwnership>())
+                                        {
+                                            <option value="@f">@f</option>
+                                        }
+                                    </select> 
+                                </div> *@
+
+                                <div class="mb-2">
+                                    <label>ЄДРПОУ</label>
+                                    <input class="form-control"
+                                           @bind="Model.Edrpou" />
+                                </div>
+
+                                <div class="mb-2">
+                                    <label>ІПН</label>
+                                    <input class="form-control"
+                                           @bind="Model.Tin" />
+                                </div>
+
+                                <div class="mb-2">
+                                    <label>Опис</label>
+                                    <textarea class="form-control"
+                                              @bind="Model.Description"></textarea>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input"
+                                           @bind="Model.Supplier" />
+                                    <label class="form-check-label">Постачальник</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input"
+                                           @bind="Model.Seller" />
+                                    <label class="form-check-label">Продавець</label>
+                                </div>
+
+                            </div>
+                        </ChildContent>
+                    </TabItem>
+
+                    <!-- Вкладка Телефони -->
+                    @*                  <TabItem>
+                        <ChildContent>
+                            <SfGrid TValue="PhoneLiteDto"
+                                    @ref="PhoneGrid"
+                                    AllowPaging="true"
+                                    Toolbar="@(new List<string>() { "Add", "Edit", "Delete", "Update", "Cancel" })">
+
+                                <SfDataManager Adaptor="Adaptors.CustomAdaptor"
+                                               AdaptorInstance="typeof(PhoneAdaptor)"
+                                               Query="@(new Query().AddParams("counterpartyId", Model.Id.ToString()))">
+                                </SfDataManager>
+
+                                <GridEditSettings AllowAdding="true"
+                                                  AllowEditing="true"
+                                                  AllowDeleting="true"
+                                                  Mode="EditMode.Dialog">
+                                </GridEditSettings>
+
+                                <GridColumns>
+                                    <GridColumn Field="Id" IsPrimaryKey="true" Visible="false"></GridColumn>
+                                    <GridColumn Field="Phone" HeaderText="Телефон"></GridColumn>
+                                    <GridColumn Field="Description" HeaderText="Опис"></GridColumn>
+                                </GridColumns>
+
+                            </SfGrid>
+                        </ChildContent>
+                    </TabItem> *@
+
+                </TabItems>
+            </SfTab>
+                <SfGrid TValue="PhoneLiteDto"
+                    @ref="PhoneGrid"
+                    AllowPaging="true"
+                    Toolbar="@(new List<string>() { "Add", "Edit", "Delete", "Update", "Cancel" })"
+                    Query="@(new Query().AddParams("counterpartyId", Model.Id.ToString()))">
+
+                <SfDataManager Adaptor="Adaptors.CustomAdaptor"
+                               AdaptorInstance="typeof(PhoneAdaptor)">
+                </SfDataManager>
+
+                <GridEditSettings AllowAdding="true"
+                                  AllowEditing="true"
+                                  AllowDeleting="true"
+                                  Mode="EditMode.Dialog">
+                </GridEditSettings>
+
+                <GridColumns>
+                    <GridColumn Field="Id" IsPrimaryKey="true" Visible="false"></GridColumn>
+                    <GridColumn Field="Phone" HeaderText="Телефон"></GridColumn>
+                    <GridColumn Field="Description" HeaderText="Опис"></GridColumn>
+                </GridColumns>
+
+            </SfGrid>
+        </Content>
+
+        @*         <Footer>
+            <button class="btn btn-primary" @onclick="Save">Зберегти</button>
+        </Footer> *@
+    </DialogTemplates>
+</SfDialog>
+
+@code {
+    // [Parameter] public CounterpartyFullModel Model { get; set; } = default!;
+    [Parameter] public Guid CounterpartyId { get; set; }
+    [Parameter] public EventCallback<CounterpartyFullModel> OnSave { get; set; }
+
+    private CounterpartyFullModel? Model;
+
+    private SfGrid<PhoneLiteDto>? PhoneGrid;
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var response = await CounterpartyService.GetCounterparty(CounterpartyId);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Model = response.Content!.Counterparty;
+
+        }
+        else
+        {
+            Console.WriteLine($"API Error (read): {response.StatusCode} - {response.Error?.Message} - {response.Error?.Content}");
+            throw new Exception(response.Error?.Message, response.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        // Отримуємо телефони з гріда
+        var phones = await PhoneGrid!.GetCurrentViewRecordsAsync();
+        Model.Phones = phones.ToList();
+
+        await OnSave.InvokeAsync(Model);
+    }
+}
+

@@ -1,0 +1,284 @@
+﻿@page "/counterparties"
+@using CRMWeb.Models.Counterparties
+@using CRMWeb.Services.Counterparties
+@using System.Text.Json
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+
+<PageTitle>Counterparties</PageTitle>
+<h3>Counterparties</h3>
+
+<span class="error">@ErrorDetails</span>
+
+
+<SfGrid TValue="CounterpartyModel" @ref="CounterpartyGrid"
+        AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowGrouping="true"
+        ShowColumnMenu="true" AllowPdfExport="true" AllowResizing="true" AllowReordering="true"
+        Toolbar="@toolbar">
+    <GridEvents TValue="CounterpartyModel" OnActionFailure="@HandleActionFailure" OnActionBegin="@HandleActionBegin" RowSelected="OnCounterpartySelected"></GridEvents>
+    <GridPageSettings PageSize="6"></GridPageSettings>
+    <SfDataManager AdaptorInstance="@typeof(CounterpartyAdaptor)" Adaptor="Adaptors.CustomAdaptor"></SfDataManager>
+    @* <GridGroupSettings ShowGroupedColumn="true"></GridGroupSettings> *@
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+
+    
+    <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Dialog" Dialog="DialogParams">
+        <Template Context="dialogContext">
+            @{
+                var Counterparty = (dialogContext as CounterpartyModel);
+                var IdValue = (Counterparty!.Id).ToString() ?? string.Empty;
+
+                <div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <SfTextBox ID="Name"
+                                       @bind-Value=@(Counterparty.Name)
+                                       FloatLabelType="FloatLabelType.Always"
+                                       Placeholder="Name"></SfTextBox>
+                        </div>
+                    </div>
+                </div>
+
+                @if (
+                    SelectedCounterpartyId != Guid.Empty)
+                {
+                    <GridTemplates>
+                        <DetailTemplate Context="contextFull">
+                            @{
+                                var model = (contextFull as CounterpartyFullModel)!;
+                                int x = 0;
+                            }
+                        </DetailTemplate>
+                    </GridTemplates>
+
+
+                    <SfGrid TValue="CounterpartyFullModel" @ref="CounterpartyFullGrid"
+                            AllowPaging="false" AllowSorting="false" Query="@FullQuery">
+
+                        <SfDataManager Adaptor="Adaptors.CustomAdaptor"
+                                       AdaptorInstance="@typeof(CounterpartyFullAdaptor)">
+                        </SfDataManager>
+                        <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Dialog" Dialog="DialogParams">
+                            <Template Context="dialogContext2">
+                                @{
+                                    var CounterpartyFull = (dialogContext2 as CounterpartyFullModel);
+                                    int e = 0;
+                                }
+                       
+                            </Template>
+                        </GridEditSettings>
+
+                        @*
+                    <GridTemplates>
+                        <DetailTemplate>
+                        @{
+                            var CounterpartyFull = (context as CounterpartyFullModel);
+                        }
+                                <div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <SfTextBox ID="Name"
+                                                       @bind-Value=@(Counterparty.Name)
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Name"></SfTextBox>
+                                        </div>
+                                    </div>
+                                </div>
+                        <div>
+                                    <SfGrid TValue="PhoneLiteDto" DataSource="@(CounterpartyFull?.Phones)">
+                                        <GridColumns>
+                                            <GridColumn Field="Number" HeaderText="Номер"></GridColumn>
+                                        </GridColumns>
+                                    </SfGrid>
+                        </div>
+                        </DetailTemplate>
+                    </GridTemplates>
+                    *@
+                    </SfGrid>
+                }
+
+
+            }
+        </Template>
+    </GridEditSettings>
+
+    <GridColumns>
+        <GridColumn Field=@nameof(CounterpartyModel.Name) HeaderText="Name" Visible="true"></GridColumn>
+        <GridColumn Field=@nameof(CounterpartyModel.Supplier) HeaderText="Supplier" Width="150" DisplayAsCheckbox=@true TextAlign="TextAlign.Center" Type="ColumnType.Boolean"></GridColumn>
+        <GridColumn Field=@nameof(CounterpartyModel.Seller) HeaderText="Seller" Width="150" DisplayAsCheckbox=@true TextAlign="TextAlign.Center" Type="ColumnType.Boolean"></GridColumn>
+        <GridColumn Field=@nameof(CounterpartyModel.Id) HeaderText="Id" IsPrimaryKey="true" ValidationRules="@(new ValidationRules { Required = true })" TextAlign="@TextAlign.Left" HeaderTextAlign="@TextAlign.Left" Width="200" Visible="false"></GridColumn>
+
+    </GridColumns>
+</SfGrid>
+
+<style>
+    .error {
+        color: red;
+    }
+
+    /*     .default-tab {
+            border: 1px solid #d7d7d7;
+        }
+            .default-tab .e-content .e-item {
+                padding: 10px;
+                text-align: justify;
+            }
+
+        .default-tab-control-section {
+            margin: 20px 20% 20px 20%;
+        } */
+
+    @@media screen and (max-width: 480px) {
+        .default-tab-control-section {
+            margin: 20px 0 20px 0;
+        }
+    }
+
+    .bootstrap5 .default-tab,
+    .bootstrap5-dark .default-tab,
+    .bootstrap .default-tab,
+    .bootstrap-dark .default-tab,
+    .bootstrap4 .default-tab {
+        border: none;
+    }
+
+        .fluent .default-tab .e-content > .e-item.e-active,
+        .bootstrap5 .default-tab .e-content > .e-item.e-active,
+        .tailwind .default-tab .e-content > .e-item.e-active,
+        .tailwind3 .default-tab .e-content > .e-item.e-active,
+        .material .default-tab .e-content > .e-item.e-active,
+        .bootstrap4 .default-tab .e-content > .e-item.e-active,
+        .bootstrap .default-tab .e-content > .e-item.e-active,
+        .fabric .default-tab .e-content > .e-item.e-active,
+        .fluent2 .default-tab .e-content > .e-item.e-active {
+            background: #FAF9F8;
+        }
+
+        .fluent-dark .default-tab .e-content > .e-item.e-active,
+        .bootstrap5-dark .default-tab .e-content > .e-item.e-active,
+        .tailwind-dark .default-tab .e-content > .e-item.e-active,
+        .tailwind3-dark .default-tab .e-content > .e-item.e-active,
+        .material-dark .default-tab .e-content > .e-item.e-active,
+        .bootstrap-dark .default-tab .e-content > .e-item.e-active,
+        .fabric-dark .default-tab .e-content > .e-item.e-active,
+        .highcontrast .default-tab .e-content > .e-item.e-active,
+        .fluent2-dark .default-tab .e-content > .e-item.e-active,
+        .fluent2-highcontrast .default-tab .e-content > .e-item.e-active {
+            background: #201F1E;
+        }
+
+    /*     .e-grid .e-toolbar .e-btn-icon.e-add::before,
+        .e-grid .e-toolbar .e-btn-icon.e-edit::before,
+        .e-grid .e-toolbar .e-btn-icon.e-delete::before,
+        .e-grid .e-toolbar .e-btn-icon.e-update::before,
+        .e-grid .e-toolbar .e-btn-icon.e-cancel::before {
+            font-size: 16px;
+        }
+
+        .e-grid .e-toolbar .e-tbar-btn-text {
+            display: none;
+        } */
+</style>
+
+@code {
+    private string ErrorDetails = string.Empty;
+    private string ErrorDialodDetails = string.Empty;
+
+    private SfGrid<CounterpartyModel> CounterpartyGrid { get; set; } = new();
+    private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "420px" };
+    private DialogSettings DialogParamsItems = new DialogSettings { Height = "200px" };
+
+    private List<object> toolbar = new List<object> { "Add", "Edit", "Delete", "Update", "Cancel", "Search", "PdfExport" };
+    private List<string> toolbarItems = new() { "Add", "Edit", "Delete", "Update", "Cancel" };
+
+    public int rows = 2;
+    public int maxRows = 5; // Set your maximum limit here
+    public string temp = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    public void HandleActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
+    {
+        bool dialog = false;
+        var errordetails = args.Error.Message;
+
+        try
+        {
+            var apiException = args.Error.InnerException as Refit.ApiException;
+            if (apiException is not null
+                && (apiException.HttpMethod.Method == "POST"
+                    || apiException.HttpMethod.Method == "PUT"
+                ))
+            {
+                dialog = true;
+            }
+
+            if (errordetails.Contains("ValidationErrors"))
+            {
+                var msgs = JsonDocument.Parse(errordetails).RootElement
+                    .GetProperty("ValidationErrors")
+                    .EnumerateArray()
+                    .Select(e => e.GetProperty("errorMessage").GetString())
+                    .Where(s => !string.IsNullOrWhiteSpace(s));
+
+                if (dialog)
+                    ErrorDialodDetails = string.Join(" | ", msgs);
+                else
+                    ErrorDetails = string.Join(" | ", msgs);
+            }
+            else if (errordetails.Contains("detail"))
+            {
+                var detail = JsonDocument.Parse(errordetails).RootElement.GetProperty("detail").GetString();
+                if (dialog)
+                    ErrorDialodDetails = detail!;
+                else
+                    ErrorDetails = detail!;
+            }
+            else
+            {
+                if (dialog)
+                    ErrorDialodDetails = errordetails;
+                else
+                    ErrorDetails = errordetails;
+            }
+        }
+        catch
+        {
+            if (dialog)
+                ErrorDialodDetails = errordetails;
+            else
+                ErrorDetails = errordetails;
+        }
+
+        StateHasChanged();
+    }
+
+    public void HandleActionBegin(ActionEventArgs<CounterpartyModel> args)
+    {
+        ErrorDetails = string.Empty;
+        ErrorDialodDetails = string.Empty;
+    }
+
+    public string GetHeader(CounterpartyModel? value)
+    {
+        return value?.Id == Guid.Empty
+            ? "New counterparty"
+            : $"Edit: '{value?.Name}'";
+    }
+
+    private SfGrid<CounterpartyFullModel> CounterpartyFullGrid { get; set; } = new();
+
+    private Guid SelectedCounterpartyId;
+
+    private Query FullQuery => new Query().AddParams("CounterpartyId", SelectedCounterpartyId);
+
+    private void OnCounterpartySelected(RowSelectEventArgs<CounterpartyModel> args)
+    {
+        SelectedCounterpartyId = args.Data?.Id ?? Guid.Empty;
+    }
+}

@@ -105,6 +105,7 @@ public class PhoneByCounterpartyAdaptor : DataAdaptor
 
     public override async Task<object?> InsertAsync(DataManager dataManager, object data, string key)
     {
+
         var insert = (PhoneModel)data;
 
         var response = await _phoneService.CreatePhone(new CreatePhoneRequest(insert));

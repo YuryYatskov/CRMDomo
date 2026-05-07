@@ -1,0 +1,420 @@
+﻿@page "/counterparties2"
+@using CRMWeb.Models.Counterparties
+@using CRMWeb.Models.Phones
+@using CRMWeb.Services
+@using CRMWeb.Services.Counterparties
+@using CRMWeb.Services.Phones
+@using System.Text.Json
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+<PageTitle>Counterparties</PageTitle>
+<h3>Counterparties</h3>
+
+<span class="error">@ErrorDetails</span>
+
+
+<SfGrid TValue="CounterpartyModel" @ref="CounterpartyGrid"
+
+        AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowGrouping="true"
+        ShowColumnMenu="true" AllowPdfExport="true" AllowResizing="true" AllowReordering="true"
+        Toolbar="@toolbar">
+    <GridEvents TValue="CounterpartyModel" OnActionFailure="@HandleActionFailure" OnActionBegin="@HandleActionBegin" RowSelected="OnCounterpartySelected"></GridEvents>
+    <GridPageSettings PageSize="6"></GridPageSettings>
+    <SfDataManager AdaptorInstance="@typeof(CounterpartyAdaptor)" Adaptor="Adaptors.CustomAdaptor"></SfDataManager>
+    @* <GridGroupSettings ShowGroupedColumn="true"></GridGroupSettings> *@
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+
+    <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Dialog" Dialog="DialogParams">
+        <HeaderTemplate>
+            @{
+                var DialogHeader = GetHeader((context as CounterpartyModel));
+                <span>@DialogHeader</span>
+            }
+        </HeaderTemplate>
+
+        <Template Context="contextDialog">
+            @{
+                var Counterparty = (contextDialog as CounterpartyModel);
+                var IdValue = (Counterparty!.Id).ToString() ?? string.Empty;
+
+                <FluentValidator TValidator="CounterpartyValidator" />
+                <ValidationSummary />
+
+                <span class="error">@ErrorDialodDetails</span>
+
+                <div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <SfTextBox ID="Name"
+                                       @bind-Value=@(Counterparty.Name)
+                                       FloatLabelType="FloatLabelType.Always"
+                                       Placeholder="Name"></SfTextBox>
+                        </div>
+                    </div>
+                </div>
+                <SfTab CssClass=@("default-tab")>
+                    <TabAnimationSettings>
+                        <TabAnimationPrevious Effect=AnimationEffect.None></TabAnimationPrevious>
+                        <TabAnimationNext Effect=AnimationEffect.None></TabAnimationNext>
+                    </TabAnimationSettings>
+                    <TabItems>
+                        <TabItem>
+                            <ChildContent>
+                                <TabHeader Text="Basic"></TabHeader>
+                            </ChildContent>
+                            <ContentTemplate>
+                                <div>
+                                   @* <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <SfTextBox ID="Name"
+                                                       @bind-Value=@(Counterparty.Name)
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Name"></SfTextBox>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <SfTextBox ID="FullName"
+                                                       @bind-Value=@(Counterparty.FullName)
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Full name"></SfTextBox>
+                                        </div>
+                                    </div>*@
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <SfCheckBox @bind-Checked="@(Counterparty!.Supplier)">Supplier</SfCheckBox>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <SfCheckBox @bind-Checked="@(Counterparty.Seller)">Seller</SfCheckBox>
+                                        </div>
+                                    </div>
+                                    @* <div class="row">
+                                        <div class="form-group col-md-6">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <SfDropDownList ID="FormOfOwnership"
+                                                            TValue="FormOfOwnership"
+                                                            TItem="FormOfOwnershipEnumItem"
+                                                            FloatLabelType="FloatLabelType.Always"
+                                                            Placeholder="Form of ownership"
+                                                            DataSource="EnumFormOfOwnership"
+                                                            @bind-Value="@(Counterparty.FormOfOwnership)">
+                                                <DropDownListFieldSettings Text="Text" Value="Value"></DropDownListFieldSettings>
+                                            </SfDropDownList>
+
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <SfTextBox ID="Edrpou"
+                                                       @bind-Value="@(Counterparty.Edrpou)"
+                                                       OnKeyPress="RestrictInputNumber(event)"
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Edrpou"></SfTextBox>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <SfTextBox ID="Tin"
+                                                       @bind-Value="@(Counterparty.Tin)"
+                                                       OnKeyPress="RestrictInputNumber(event)"
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Tin"></SfTextBox>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <SfTextBox ID="Description"
+                                                       @bind-Value="@(Counterparty.Description)"
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Description"
+                                                       Multiline="true"
+                                                       HtmlAttributes="@(new Dictionary<string, object>() { { "rows", "2" } })"></SfTextBox>
+                                        </div>
+                                    </div>*@
+                                </div>
+                                <div>
+                                    <div class="row">
+                                        <div class="form-group col-md-9">
+                                            <SfTextBox ID="Id"
+                                                       @bind-Value=@(IdValue)
+                                                       FloatLabelType="FloatLabelType.Always"
+                                                       Placeholder="Id"
+                                                       Enabled=false>
+                                            </SfTextBox>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ContentTemplate>
+                        </TabItem>
+                        <TabItem>
+                            <ChildContent>
+                                <TabHeader Text="Phones"></TabHeader>
+                            </ChildContent>
+                            <ContentTemplate>
+                                <div>
+                                    <div class="row">
+                                        <SfGrid TValue=PhoneModel" @ref="PhoneGrid" Query="@phoneQuery" AllowSorting="true"
+                                                Toolbar="@toolbarItems" Height="200px">
+                                            <Syncfusion.Blazor.Data.SfDataManager AdaptorInstance="@typeof(PhoneByCounterpartyAdaptor)" Adaptor="Adaptors.CustomAdaptor"></Syncfusion.Blazor.Data.SfDataManager>
+
+                                            @* <GridEvents TValue="PhoneModel" OnActionBegin="OnActionBeginPhone"></GridEvents> *@
+                                            <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Normal"></GridEditSettings>
+                                            @*      <GridTemplates>
+                            <ToolbarTemplate>
+                                <ToolbarItems>
+                                    <ToolbarItem Type="ItemType.Button" PrefixIcon="e-add" TooltipText="Add" OnClick="AddClick"></ToolbarItem>
+                                    <ToolbarItem Type="ItemType.Button" PrefixIcon="e-edit" TooltipText="Edit" OnClick="EditClick"></ToolbarItem>
+                                    <ToolbarItem Type="ItemType.Button" PrefixIcon="e-delete" TooltipText="Delete" OnClick="DeleteClick"></ToolbarItem>
+                                    <ToolbarItem Type="ItemType.Button" PrefixIcon="e-update" TooltipText="Update" OnClick="UpdateClick"></ToolbarItem>
+                                    <ToolbarItem Type="ItemType.Button" PrefixIcon="e-cancel" TooltipText="Cancel" OnClick="CancelClick"></ToolbarItem>
+                                </ToolbarItems>
+                            </ToolbarTemplate>
+                        </GridTemplates> *@
+                                            <GridColumns>
+                                                <GridColumn Field=@nameof(PhoneModel.Number) HeaderText="Number"></GridColumn>
+                                                <GridColumn Field=@nameof(PhoneModel.Id) HeaderText="Id" IsPrimaryKey="true" ValidationRules="@(new ValidationRules { Required = true })" TextAlign="@TextAlign.Left" HeaderTextAlign="@TextAlign.Left" Width="200" Visible="false"></GridColumn>
+                                            </GridColumns>
+                                        </SfGrid>
+                                    </div>
+                                </div>
+                            </ContentTemplate>
+                        </TabItem>
+                    </TabItems>
+                </SfTab>
+
+
+
+                
+
+            }
+        </Template>
+    </GridEditSettings>
+
+    <GridColumns>
+        <GridColumn Field=@nameof(CounterpartyModel.Name) HeaderText="Name" Visible="true"></GridColumn>
+
+        <GridColumn Field=@nameof(CounterpartyModel.Supplier) HeaderText="Supplier" Width="150" DisplayAsCheckbox=@true TextAlign="TextAlign.Center" Type="ColumnType.Boolean"></GridColumn>
+         @* <SfCheckBox @bind-Checked="@IsChecked">Checkbox: @IsChecked</SfCheckBox> *@
+        <GridColumn Field=@nameof(CounterpartyModel.Seller) HeaderText="Seller" Width="150" DisplayAsCheckbox=@true TextAlign="TextAlign.Center" Type="ColumnType.Boolean"></GridColumn>
+
+        <GridColumn Field=@nameof(CounterpartyModel.Id) HeaderText="Id" IsPrimaryKey="true" ValidationRules="@(new ValidationRules { Required = true })" TextAlign="@TextAlign.Left" HeaderTextAlign="@TextAlign.Left" Width="200" Visible="false"></GridColumn>
+
+    </GridColumns>
+</SfGrid>
+
+<style>
+    .error {
+        color: red;
+    }
+
+    /*     .default-tab {
+        border: 1px solid #d7d7d7;
+    }
+        .default-tab .e-content .e-item {
+            padding: 10px;
+            text-align: justify;
+        }
+
+    .default-tab-control-section {
+        margin: 20px 20% 20px 20%;
+    } */
+
+    @@media screen and (max-width: 480px) {
+        .default-tab-control-section {
+            margin: 20px 0 20px 0;
+        }
+    }
+
+    .bootstrap5 .default-tab,
+    .bootstrap5-dark .default-tab,
+    .bootstrap .default-tab,
+    .bootstrap-dark .default-tab,
+    .bootstrap4 .default-tab {
+        border: none;
+    }
+
+        .fluent .default-tab .e-content > .e-item.e-active,
+        .bootstrap5 .default-tab .e-content > .e-item.e-active,
+        .tailwind .default-tab .e-content > .e-item.e-active,
+        .tailwind3 .default-tab .e-content > .e-item.e-active,
+        .material .default-tab .e-content > .e-item.e-active,
+        .bootstrap4 .default-tab .e-content > .e-item.e-active,
+        .bootstrap .default-tab .e-content > .e-item.e-active,
+        .fabric .default-tab .e-content > .e-item.e-active,
+        .fluent2 .default-tab .e-content > .e-item.e-active {
+            background: #FAF9F8;
+        }
+
+        .fluent-dark .default-tab .e-content > .e-item.e-active,
+        .bootstrap5-dark .default-tab .e-content > .e-item.e-active,
+        .tailwind-dark .default-tab .e-content > .e-item.e-active,
+        .tailwind3-dark .default-tab .e-content > .e-item.e-active,
+        .material-dark .default-tab .e-content > .e-item.e-active,
+        .bootstrap-dark .default-tab .e-content > .e-item.e-active,
+        .fabric-dark .default-tab .e-content > .e-item.e-active,
+        .highcontrast .default-tab .e-content > .e-item.e-active,
+        .fluent2-dark .default-tab .e-content > .e-item.e-active,
+        .fluent2-highcontrast .default-tab .e-content > .e-item.e-active {
+            background: #201F1E;
+        }
+
+/*     .e-grid .e-toolbar .e-btn-icon.e-add::before,
+    .e-grid .e-toolbar .e-btn-icon.e-edit::before,
+    .e-grid .e-toolbar .e-btn-icon.e-delete::before,
+    .e-grid .e-toolbar .e-btn-icon.e-update::before,
+    .e-grid .e-toolbar .e-btn-icon.e-cancel::before {
+        font-size: 16px;
+    }
+
+    .e-grid .e-toolbar .e-tbar-btn-text {
+        display: none;
+    } */
+</style>
+
+@code {
+    private string ErrorDetails = string.Empty;
+    private string ErrorDialodDetails = string.Empty;
+
+    private SfGrid<CounterpartyModel> CounterpartyGrid { get; set; } = new();
+    private SfGrid<PhoneModel> PhoneGrid { get; set; } = new();
+    private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "420px" }; // 420px
+    private DialogSettings DialogParamsItems = new DialogSettings { Height = "200px" };
+
+    private List<object> toolbar = new List<object> { "Add", "Edit", "Delete", "Update", "Cancel", "Search", "PdfExport" };
+    private List<string> toolbarItems = new() { "Add", "Edit", "Delete", "Update", "Cancel" };
+
+    public int rows = 2;
+    public int maxRows = 5; // Set your maximum limit here
+    public string temp = string.Empty;
+
+    // public Query RemoteDataQuery = new Query().Select(new List<string> { "Id" }).Take(3).RequiresCount();
+    // // public Query Qry { get; set; } = new Query().AddParams("id", 2).AddParams("str", "23");
+
+    // private List<FormOfOwnershipEnumItem> EnumFormOfOwnership = Enum.GetValues(typeof(FormOfOwnership))
+    //         .Cast<FormOfOwnership>().Select(x => new FormOfOwnershipEnumItem { Value = x, Text = x.GetDisplayName() }).ToList();
+
+    // public class FormOfOwnershipEnumItem : EnumItem<FormOfOwnership>;
+
+    // public List<PhoneModel> PhonesByCounterparty { get; set; } = new List<PhoneModel>();
+
+    // private List<PhoneNoteModel> PhoneNoteData { get; set; } = new List<PhoneNoteModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    // public void GetPhonesByCounterparty(Guid id)
+    // {
+    //     PhonesByCounterparty = PhoneGrid.DataSource.Cast<PhoneModel>().Where(p => p.CounterpartyId == id).ToList();
+    // }
+
+    private void InputHandler(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        temp = args.Value?.ToString() ?? string.Empty;
+        var x = temp.Split('\n').Length;
+        var y = temp.Split('\r').Length;
+        var newRows = (x >= y) ? x : y;
+        rows = (newRows <= maxRows) ? newRows : maxRows;
+    }
+
+    public void HandleActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
+    {
+        bool dialog = false;
+        var errordetails = args.Error.Message;
+
+        try
+        {
+            var apiException = args.Error.InnerException as Refit.ApiException;
+            if (apiException is not null
+                && (apiException.HttpMethod.Method == "POST"
+                    || apiException.HttpMethod.Method == "PUT"
+                ))
+            {
+                dialog = true;
+            }
+
+            if (errordetails.Contains("ValidationErrors"))
+            {
+                var msgs = JsonDocument.Parse(errordetails).RootElement
+                    .GetProperty("ValidationErrors")
+                    .EnumerateArray()
+                    .Select(e => e.GetProperty("errorMessage").GetString())
+                    .Where(s => !string.IsNullOrWhiteSpace(s));
+
+                if (dialog)
+                    ErrorDialodDetails = string.Join(" | ", msgs);
+                else
+                    ErrorDetails = string.Join(" | ", msgs);
+            }
+            else if (errordetails.Contains("detail"))
+            {
+                var detail = JsonDocument.Parse(errordetails).RootElement.GetProperty("detail").GetString();
+                if (dialog)
+                    ErrorDialodDetails = detail!;
+                else
+                    ErrorDetails = detail!;
+            }
+            else
+            {
+                if (dialog)
+                    ErrorDialodDetails = errordetails;
+                else
+                    ErrorDetails = errordetails;
+            }
+        }
+        catch
+        {
+            if (dialog)
+                ErrorDialodDetails = errordetails;
+            else
+                ErrorDetails = errordetails;
+        }
+
+        StateHasChanged();
+    }
+
+    public void HandleActionBegin(ActionEventArgs<CounterpartyModel> args)
+    {
+        ErrorDetails = string.Empty;
+        ErrorDialodDetails = string.Empty;
+    }
+
+    public string GetHeader(CounterpartyModel? value)
+    {
+        return value?.Id == Guid.Empty
+            ? "New counterparty"
+            : $"Edit: '{value?.Name}'";
+    }
+
+
+
+
+    // private DataManager counterpartyManager = new DataManager();
+    // private DataManager phoneManager = new DataManager();
+
+    // private bool phonesDialogVisible = false;
+    // private Guid selectedCounterpartyId;
+    // private string dialogTitle = string.Empty;
+
+    private Query phoneQuery = new Query();
+
+    private async Task OnCounterpartySelected(RowSelectEventArgs<CounterpartyModel> args)
+    {
+        var cp = args.Data;
+
+        // selectedCounterpartyId = cp.Id;
+        // dialogTitle = $"Телефони: {cp.Name}";
+
+        phoneQuery = new Query().AddParams("CounterpartyId", cp!.Id);
+
+        // var response =  await PhoneNoteService.GetPhoneNotes(cp.SeparatorId, 0, int.MaxValue);
+
+        // if (response.IsSuccessStatusCode)
+        // {
+        //    PhoneNoteData = response.Content!.PhoneNotes.Data.ToList();
+        // }
+        // phonesDialogVisible = true;
+    }
+}
+
