@@ -1,0 +1,198 @@
+﻿@page "/phones"
+@using CRMWeb.Models.Phones
+@using System.Text.Json
+@using CRMWeb.Services
+@using CRMWeb.Services.Counterparties
+@using CRMWeb.Services.Phones
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using CRMWeb.Models.Counterparties
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+<PageTitle>Phones</PageTitle>
+
+<h3>Phones</h3>
+
+<span class="error">@ErrorDetails</span>
+
+<SfGrid TValue=PhoneModel" @ref="PhoneGrid"
+        AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowGrouping="true"
+        ShowColumnMenu="true" AllowResizing="true" AllowReordering="true"
+        Toolbar="@toolbar">
+    <GridEvents TValue="PhoneModel" OnActionFailure="@HandleActionFailure" OnActionBegin="@HandleActionBegin"></GridEvents>
+    <GridPageSettings PageSize="6"></GridPageSettings>
+    <SfDataManager AdaptorInstance="@typeof(PhoneAdaptor)" Adaptor="Adaptors.CustomAdaptor"></SfDataManager>
+    @* <GridGroupSettings ShowGroupedColumn="true"></GridGroupSettings> *@
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+
+    <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Dialog" Dialog="DialogParams">
+        <HeaderTemplate>
+            @{
+                var DialogHeader = GetHeader((context as PhoneModel));
+                <span>@DialogHeader</span>
+            }
+        </HeaderTemplate>
+
+        <Template>
+            @{
+                var Phone = (context as PhoneModel);
+                var IdValue = (Phone!.Id).ToString() ?? string.Empty;
+
+                <FluentValidator TValidator="PhoneValidator" />
+                <ValidationSummary />
+
+                <span class="error">@ErrorDialodDetails</span>
+
+                <div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <SfTextBox ID="Name"
+                                       @bind-Value=@(Phone.Number)
+                                       FloatLabelType="FloatLabelType.Always"
+                                       Placeholder="Number"></SfTextBox>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <SfDropDownList @bind-Value=@(Phone.CounterpartyId)
+                                            FloatLabelType="FloatLabelType.Always"
+                                            TValue="Guid?" Placeholder="Counterparty" TItem="CounterpartyModel">
+                                <Syncfusion.Blazor.Data.SfDataManager AdaptorInstance="@typeof(CounterpartyAdaptor)"
+                                                                      Adaptor="Adaptors.CustomAdaptor"
+                                                                      CrossDomain="true">
+                                </Syncfusion.Blazor.Data.SfDataManager>
+                                <DropDownListFieldSettings Text="Name" Value="Id"></DropDownListFieldSettings>
+                            </SfDropDownList>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="row">
+                        <div class="form-group col-md-9">
+                            <SfTextBox ID="Id"
+                                       @bind-Value=@(IdValue)
+                                       FloatLabelType="FloatLabelType.Always"
+                                       Placeholder="Id"
+                                       Enabled=false>
+                            </SfTextBox>
+                        </div>
+                    </div>
+                </div>
+            }
+        </Template>
+    </GridEditSettings>
+
+    <GridColumns>
+        <GridColumn Field=@nameof(PhoneModel.Number) HeaderText="Number"></GridColumn>
+        <GridColumn Field=@nameof(PhoneModel.CounterpartyName) HeaderText="Counterpart"></GridColumn>
+        <GridColumn Field=@nameof(PhoneModel.Id) HeaderText="Id" IsPrimaryKey="true" ValidationRules="@(new ValidationRules { Required = true })" TextAlign="@TextAlign.Left" HeaderTextAlign="@TextAlign.Left" Width="200" Visible="false"></GridColumn>
+    </GridColumns>
+</SfGrid>
+@* 
+<AuthorizeView Policy="ProductWrite">
+    <button @onclick="CreateProduct">Add Product</button>
+</AuthorizeView> *@
+
+<style>
+    .error {
+        color: red;
+    }
+</style>
+
+@code {
+    private string ErrorDetails = string.Empty;
+    private string ErrorDialodDetails = string.Empty;
+
+    private SfGrid<PhoneModel> PhoneGrid { get; set; } = new();
+    private DialogSettings DialogParams = new DialogSettings { MinHeight = "400px", Width = "400px" };
+
+    private List<object> toolbar = new List<object> { "Add", "Edit", "Delete", "Search" };
+
+    private List<PhoneModel> PhoneData { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    public void HandleActionFailure(Syncfusion.Blazor.Grids.FailureEventArgs args)
+    {
+        bool dialog = false;
+        var errordetails = args.Error.Message;
+
+        try
+        {
+            var apiException = args.Error.InnerException as Refit.ApiException;
+            if (apiException is not null
+                && (apiException.HttpMethod.Method == "POST"
+                    || apiException.HttpMethod.Method == "PUT"
+                ))
+            {
+                dialog = true;
+            }
+
+            if (errordetails.Contains("ValidationErrors"))
+            {
+                var msgs = JsonDocument.Parse(errordetails).RootElement
+                    .GetProperty("ValidationErrors")
+                    .EnumerateArray()
+                    .Select(e => e.GetProperty("errorMessage").GetString())
+                    .Where(s => !string.IsNullOrWhiteSpace(s));
+
+                if (dialog)
+                    ErrorDialodDetails = string.Join(" | ", msgs);
+                else
+                    ErrorDetails = string.Join(" | ", msgs);
+            }
+            else if (errordetails.Contains("detail"))
+            {
+                var detail = JsonDocument.Parse(errordetails).RootElement.GetProperty("detail").GetString();
+                if (dialog)
+                    ErrorDialodDetails = detail!;
+                else
+                    ErrorDetails = detail!;
+            }
+            else
+            {
+                if (dialog)
+                    ErrorDialodDetails = errordetails;
+                else
+                    ErrorDetails = errordetails;
+            }
+        }
+        catch
+        {
+            if (dialog)
+                ErrorDialodDetails = errordetails;
+            else
+                ErrorDetails = errordetails;
+        }
+
+        StateHasChanged();
+    }
+
+    public void HandleActionBegin(ActionEventArgs<PhoneModel> args)
+    {
+        ErrorDetails = string.Empty;
+        ErrorDialodDetails = string.Empty;
+    }
+
+    // private bool IsValid(PhoneModel data)
+    // {
+    //     return !string.IsNullOrWhiteSpace(data.Name) && !string.IsNullOrWhiteSpace(data.ImageFile);
+    // }
+
+    public string GetHeader(PhoneModel? value)
+    {
+        return value?.Id == Guid.Empty
+            ? "New unit of measurement"
+            : $"Edit: '{value?.Number}'";
+    }
+}
+

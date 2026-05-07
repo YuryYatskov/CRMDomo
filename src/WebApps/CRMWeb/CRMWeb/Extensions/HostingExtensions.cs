@@ -1,5 +1,7 @@
 ﻿using CRMWeb.Components;
 using CRMWeb.Services.Catalog;
+using CRMWeb.Services.Counterparties;
+using CRMWeb.Services.Phones;
 using Refit;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
@@ -15,6 +17,18 @@ internal static class HostingExtensions
         SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["ApiSettings:SyncfusionLicenseKey"]!);
 
         builder.Services.AddRefitClient<ICatalogService>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(builder.Configuration["ApiSettings:WebServerAPIAddress"]!);
+            });
+
+        builder.Services.AddRefitClient<ICounterpartyService>()
+            .ConfigureHttpClient(c =>
+            {
+                c.BaseAddress = new Uri(builder.Configuration["ApiSettings:WebServerAPIAddress"]!);
+            });
+
+        builder.Services.AddRefitClient<IPhoneService>()
             .ConfigureHttpClient(c =>
             {
                 c.BaseAddress = new Uri(builder.Configuration["ApiSettings:WebServerAPIAddress"]!);
@@ -62,10 +76,14 @@ internal static class HostingExtensions
     {
         using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()!.CreateScope();
         SelectiveServices.CatalogService = serviceScope.ServiceProvider.GetRequiredService<ICatalogService>();
+        SelectiveServices.CounterpartyService = serviceScope.ServiceProvider.GetRequiredService<ICounterpartyService>();
+        SelectiveServices.PhoneService = serviceScope.ServiceProvider.GetRequiredService<IPhoneService>();
     }
 }
 
 internal static class SelectiveServices
 {
     public static ICatalogService? CatalogService { get; set; }
+    public static ICounterpartyService? CounterpartyService { get; set; }
+    public static IPhoneService? PhoneService { get; set; }
 }
