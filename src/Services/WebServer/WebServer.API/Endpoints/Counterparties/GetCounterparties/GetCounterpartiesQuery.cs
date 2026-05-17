@@ -20,6 +20,7 @@ public class GetCounterpartiesHandler(ApplicationDbContext dbContext)
         var counterparties = await dbContext.Counterparties.AsNoTracking()
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
+            .Include(c => c.Phones)
             .ToListAsync(cancellationToken);
 
         var counterpartiesResult = new GetCounterpartiesResult(

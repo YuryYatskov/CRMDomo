@@ -27,8 +27,14 @@ public static class CounterpartyExtensions
     {
         Id = counterparty.Id,
         Name = counterparty.Name,
+        FullName = counterparty.FullName,
         Supplier = counterparty.Supplier,
-        Seller = counterparty.Seller
+        Seller = counterparty.Seller,
+        FormOfOwnership = counterparty.FormOfOwnership,
+        Edrpou = counterparty.Edrpou,
+        Tin = counterparty.Tin,
+        Description = counterparty.Description,
+        Phones = counterparty.Phones?.Select(phone => phone.ToPhoneLiteDto()).ToList()
     };
 }
 

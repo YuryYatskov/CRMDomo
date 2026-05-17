@@ -12,10 +12,7 @@ public class CounterpartyDto : CounterpartyLiteDto
 {
     public bool Supplier { get; set; }
     public bool Seller { get; set; }
-}
 
-public class CounterpartyFullDto : CounterpartyDto
-{
     public string FullName { get; set; } = default!;
     public FormOfOwnership FormOfOwnership { get; set; }
     public string? Edrpou { get; set; }
@@ -23,4 +20,8 @@ public class CounterpartyFullDto : CounterpartyDto
     public string? Description { get; set; }
 
     public List<PhoneLiteDto>? Phones { get; set; }
+}
+
+public class CounterpartyFullDto : CounterpartyDto
+{
 }
